@@ -11,7 +11,7 @@ class Database {
     this.init();
   }
 
-  inti() {
+  init() {
     // Ja tem a conexão com o banco de dados
     this.connection = new Sequelize(databaseConfig);
 
