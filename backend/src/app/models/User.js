@@ -21,6 +21,11 @@ class User extends Model {
 
     return this;
   }
+
+  // Verifica se as senhas batem
+  checkPassword(password) {
+    return bcrypt.compare(password, this.password_hash);
+  }
 }
 
 export default User;
