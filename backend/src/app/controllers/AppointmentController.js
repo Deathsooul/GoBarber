@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { startOfHour, parseISO, isBefore } from 'date-fns';
 import User from '../models/User';
 import Appointment from '../models/Appointment';
 
@@ -29,6 +30,35 @@ class AppointmentController {
           .json({ error: 'You can only create appointments with providers' });
       }
 
+      /**
+       * Check for past dates
+       */
+
+      // Transforma a hora sempre em hora cheia
+      const hourStart = startOfHour(parseISO(date));
+
+      if (isBefore(hourStart, new Date())) {
+        return res.status(300).json({ error: 'Past date are not permitted' });
+      }
+
+      /**
+       * Check Date availability
+       */
+
+      const checkAvailability = await Appointment.findOne({
+        where: {
+          provider_id,
+          canceled_at: null,
+          date: hourStart,
+        },
+      });
+
+      if (checkAvailability) {
+        return res
+          .status(400)
+          .json({ error: 'Appointment date is not available' });
+      }
+
       // Criando o agendamento
       const appointment = await Appointment.create({
         user_id: req.userId,
@@ -38,7 +68,6 @@ class AppointmentController {
 
       return res.json(appointment);
     } catch (e) {
-      console.log(e);
       return res.status(401).json({ error: 'Somethig is wrong' });
     }
   }
